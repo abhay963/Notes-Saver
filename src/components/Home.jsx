@@ -18,29 +18,33 @@ const Home = () => {
   const dispatch = useDispatch(); // Allows you to dispatch actions to Redux
   const allPastes = useSelector((state) => state.paste.pastes); // Access pastes array from Redux store
 
-  // When `pasteId` or `allPastes` changes, update the local state to pre-fill the input fields for editing
+  // 🔄 When `pasteId` or `allPastes` changes, update the local state to pre-fill or reset the input fields
   useEffect(() => {
     if (pasteId && allPastes.length > 0) {
-      const paste = allPastes.find((p) => p._id === pasteId); // Find the paste by id
+      const paste = allPastes.find((p) => p._id === pasteId);
       if (paste) {
-        setTitle(paste.title); // Set the title to existing value
-        setValue(paste.content); // Set the content to existing value
+        setTitle(paste.title);
+        setValue(paste.content);
       } else {
         setTitle('');
         setValue('');
       }
     }
-  }, [pasteId, allPastes]); // Dependencies for useEffect
 
-  // Function to handle paste creation or update
+    // ✅ Reset fields if pasteId is removed (after update)
+    if (!pasteId) {
+      setTitle('');
+      setValue('');
+    }
+  }, [pasteId, allPastes]);
+
+  // ✍️ Function to handle paste creation or update
   const createPaste = () => {
-    // Validate that both fields are filled
     if (title.trim() === '' || value.trim() === '') {
       toast.error("Please fill out both the title and content!");
       return;
     }
 
-    // Check for duplicate paste only when creating new
     const existingPaste = allPastes.find(
       (p) => p._id === pasteId || (p.title === title && !pasteId)
     );
@@ -50,32 +54,33 @@ const Home = () => {
       return;
     }
 
-    // Build the paste object
     const paste = {
       title,
       content: value,
-      _id: pasteId || Date.now().toString(36), // unique ID using timestamp if new
-      createdAt: new Date().toString(), // Save creation date
+      _id: pasteId || Date.now().toString(36),
+      createdAt: new Date().toString(),
     };
 
     if (pasteId) {
-      dispatch(updateToPastes(paste)); // Update existing paste
-      toast.success("Paste updated!");
+      dispatch(updateToPastes(paste));
+      toast.success("Note updated successfully!");
     } else {
-      dispatch(addToPaste(paste)); // Add new paste
-      toast.success("Paste created!");
+      dispatch(addToPaste(paste));
+      toast.success("Note created successfully!");
     }
 
-    // Clear input and reset URL params
+    // ✅ Clear form inputs
     setTitle('');
     setValue('');
+
+    // ✅ Clear URL search param (to exit update mode)
     setSearchParams({});
   };
 
-  // Function to copy content to clipboard
+  // 📋 Function to copy content to clipboard
   const copyToClipboard = () => {
     if (value.trim() !== '') {
-      navigator.clipboard.writeText(value); // Use browser clipboard API
+      navigator.clipboard.writeText(value);
       toast.success("Content copied to clipboard!");
     }
   };
@@ -96,21 +101,13 @@ const Home = () => {
             className="flex-1 px-4 py-3 border border-gray-300 bg-white rounded-md text-lg font-medium 
                        focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm 
                        text-gray-900 placeholder-gray-400"
-            // Styling explanation:
-            // flex-1: take max width
-            // border: light gray border
-            // focus:ring-yellow-500: yellow glow when selected
           />
 
           {/* Button to create or update paste */}
           <button
             onClick={createPaste}
             className="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold text-base 
-                       rounded-md shadow-sm transition"
-            // Styling explanation:
-            // bg-yellow-400: background color
-            // hover:bg-yellow-500: slightly darker on hover
-            // transition: smooth hover effect
+                       rounded-md shadow-sm transition cursor-pointer"
           >
             {pasteId ? "Update Note" : "Create Note"}
           </button>
@@ -130,7 +127,7 @@ const Home = () => {
             {/* Copy button */}
             <button
               onClick={copyToClipboard}
-              className="text-gray-600 hover:text-black text-sm"
+              className="text-gray-600 hover:text-black text-sm cursor-pointer"
               title="Copy to Clipboard"
             >
               📋 Copy
@@ -144,10 +141,6 @@ const Home = () => {
             placeholder="Start typing your note..."
             className="w-full flex-1 px-5 py-4 resize-none outline-none 
                        bg-white text-gray-800 text-base font-sans leading-relaxed"
-            // Styling explanation:
-            // resize-none: disable resizing
-            // flex-1: take up all vertical space
-            // leading-relaxed: better line spacing
           />
         </div>
       </div>
