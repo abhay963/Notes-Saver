@@ -1,130 +1,178 @@
-// Importing necessary React hooks and Redux utilities
-import React, { useEffect, useState } from 'react'; // React core and hooks
-import { useDispatch, useSelector } from 'react-redux'; // For dispatching and accessing Redux store
-import { useSearchParams } from 'react-router-dom'; // To get query params from the URL
-import { addToPaste, updateToPastes } from '../redux/pasteSlice'; // Redux actions
-import toast from 'react-hot-toast'; // For showing notifications
+// ------------------------ IMPORTS ----------------------------
 
-// Main component function
+// Importing core React functionality and hooks
+import React, { useEffect, useState } from 'react'; 
+// useEffect is used to perform side effects (like loading note data when editing)
+// useState is used for managing local component state (title & content)
+
+// Importing Redux hooks
+import { useDispatch, useSelector } from 'react-redux'; 
+// useDispatch is used to dispatch actions to Redux (e.g., adding or updating a note)
+// useSelector is used to access global state from Redux store (e.g., all notes)
+
+// Importing React Router functionality
+import { useSearchParams } from 'react-router-dom'; 
+// useSearchParams lets us access query params from the URL (e.g., ?pasteId=xyz)
+
+// Importing custom Redux actions for adding and updating notes
+import { addToPaste, updateToPastes } from '../redux/pasteSlice'; 
+
+// Importing toast for showing success/error notifications
+import toast from 'react-hot-toast';
+
+
+// ------------------------ COMPONENT ----------------------------
+
+// Main functional component for the homepage
 const Home = () => {
-  // Local state to manage the title and content of the note
+  // ---------------- LOCAL STATE ----------------
+  
+  // Local state for storing the note title
   const [title, setTitle] = useState('');
+  
+  // Local state for storing the note content/body
   const [value, setValue] = useState('');
-
-  // React-router hook to get and set URL parameters (used for editing a paste)
+  
+  // ---------------- URL PARAMS ----------------
+  
+  // Using useSearchParams to access URL query params
   const [searchParams, setSearchParams] = useSearchParams();
-  const pasteId = searchParams.get("pasteId"); // get the `pasteId` from URL if available
+  const pasteId = searchParams.get("pasteId"); 
+  // If pasteId is present, the user is editing an existing note
 
-  const dispatch = useDispatch(); // Allows you to dispatch actions to Redux
-  const allPastes = useSelector((state) => state.paste.pastes); // Access pastes array from Redux store
+  // ---------------- REDUX HOOKS ----------------
+  
+  const dispatch = useDispatch(); // Used to trigger Redux actions like add/update
+  const allPastes = useSelector((state) => state.paste.pastes); 
+  // Fetch all notes from the Redux global state
 
-  // 🔄 When `pasteId` or `allPastes` changes, update the local state to pre-fill or reset the input fields
+  // ---------------- SIDE EFFECT ----------------
+  
   useEffect(() => {
+    // If editing mode is ON and notes exist in Redux store
     if (pasteId && allPastes.length > 0) {
+      // Try to find the matching note by its ID
       const paste = allPastes.find((p) => p._id === pasteId);
+      
       if (paste) {
+        // If found, pre-fill the form with existing title and content
         setTitle(paste.title);
         setValue(paste.content);
       } else {
+        // If not found (invalid pasteId), clear the form
         setTitle('');
         setValue('');
       }
     }
 
-    // ✅ Reset fields if pasteId is removed (after update)
+    // If pasteId is removed from the URL, also clear the form (clean state)
     if (!pasteId) {
       setTitle('');
       setValue('');
     }
-  }, [pasteId, allPastes]);
+  }, [pasteId, allPastes]); 
+  // Triggers every time pasteId or the list of notes change
 
-  // ✍️ Function to handle paste creation or update
+  // ---------------- HANDLE CREATE / UPDATE ----------------
+
   const createPaste = () => {
+    // Validation: ensure title and content are not empty
     if (title.trim() === '' || value.trim() === '') {
       toast.error("Please fill out both the title and content!");
       return;
     }
 
+    // Avoid duplicate notes: Check if another note with same title exists
     const existingPaste = allPastes.find(
       (p) => p._id === pasteId || (p.title === title && !pasteId)
     );
 
+    // Show error if trying to create duplicate (when not editing)
     if (!pasteId && existingPaste) {
       toast.error("Paste already exists!");
       return;
     }
 
+    // Create the note object with metadata
     const paste = {
       title,
       content: value,
-      _id: pasteId || Date.now().toString(36),
-      createdAt: new Date().toString(),
+      _id: pasteId || Date.now().toString(36), // Use existing ID or generate a unique one
+      createdAt: new Date().toString(), // Add creation date
     };
 
+    // Dispatch appropriate Redux action
     if (pasteId) {
-      dispatch(updateToPastes(paste));
+      dispatch(updateToPastes(paste)); // Update existing note
       toast.success("Note updated successfully!");
     } else {
-      dispatch(addToPaste(paste));
+      dispatch(addToPaste(paste)); // Add new note
       toast.success("Note created successfully!");
     }
 
-    // ✅ Clear form inputs
+    // After submission, clear form fields and remove pasteId from URL
     setTitle('');
     setValue('');
-
-    // ✅ Clear URL search param (to exit update mode)
-    setSearchParams({});
+    setSearchParams({}); // Clears query params from URL
   };
 
-  // 📋 Function to copy content to clipboard
+  // ---------------- COPY TO CLIPBOARD ----------------
+
   const copyToClipboard = () => {
+    // If content exists, copy it to the clipboard
     if (value.trim() !== '') {
-      navigator.clipboard.writeText(value);
+      navigator.clipboard.writeText(value); // Native browser API
       toast.success("Content copied to clipboard!");
     }
   };
 
+  // ---------------- RETURN JSX ----------------
+
   return (
-    // Full screen container with light background, centered content
+    // Full-screen main container with light gray background and centered content
     <div className="w-full h-screen bg-neutral-100 flex items-center justify-center px-4">
+
+      {/* Inner container with max width and vertical spacing */}
       <div className="w-full max-w-4xl h-full flex flex-col py-6 space-y-4">
-        
-        {/* Input field and submit button section */}
+
+        {/* Top section: Title input and Create/Update button */}
         <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
-          {/* Input for Title */}
+
+          {/* Title input field */}
           <input
             type="text"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value)} // Update title on typing
             placeholder="Title"
-            className="flex-1 px-4 py-3 border border-gray-300 bg-white rounded-md text-lg font-medium 
-                       focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm 
-                       text-gray-900 placeholder-gray-400"
+            className="flex-1 px-4 py-3 border border-gray-300 bg-white rounded-md 
+                       text-lg font-medium focus:outline-none focus:ring-2 focus:ring-yellow-500 
+                       shadow-sm text-gray-900 placeholder-gray-400"
           />
 
-          {/* Button to create or update paste */}
+          {/* Submit button - Label changes based on whether editing or creating */}
           <button
             onClick={createPaste}
-            className="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold text-base 
-                       rounded-md shadow-sm transition cursor-pointer"
+            className="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-black 
+                       font-semibold text-base rounded-md shadow-sm transition cursor-pointer"
           >
             {pasteId ? "Update Note" : "Create Note"}
           </button>
         </div>
 
-        {/* Notepad section */}
+        {/* Main notepad container */}
         <div className="flex-1 bg-white border border-gray-300 rounded-md shadow-sm overflow-hidden flex flex-col">
-          {/* Header with 3 dots and copy button */}
+
+          {/* Notepad header: traffic light dots + copy button */}
           <div className="flex items-center justify-between px-4 py-2 bg-neutral-50 border-b">
+
+            {/* Fake Mac-style colored dots for UI aesthetics */}
             <div className="flex space-x-2">
-              {/* Mac-style control dots */}
               <div className="w-3 h-3 bg-red-500 rounded-full"></div>
               <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
             </div>
 
-            {/* Copy button */}
+            {/* Copy to clipboard button */}
             <button
               onClick={copyToClipboard}
               className="text-gray-600 hover:text-black text-sm cursor-pointer"
@@ -134,10 +182,10 @@ const Home = () => {
             </button>
           </div>
 
-          {/* The textarea for writing note content */}
+          {/* Text area for writing the note content */}
           <textarea
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(e) => setValue(e.target.value)} // Update content on typing
             placeholder="Start typing your note..."
             className="w-full flex-1 px-5 py-4 resize-none outline-none 
                        bg-white text-gray-800 text-base font-sans leading-relaxed"
@@ -148,4 +196,5 @@ const Home = () => {
   );
 };
 
+// Exporting the Home component so it can be used in App.js or routed
 export default Home;
