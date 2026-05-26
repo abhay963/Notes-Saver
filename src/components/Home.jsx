@@ -128,72 +128,123 @@ const Home = () => {
 
   // ---------------- RETURN JSX ----------------
 
-  return (
-    // Full-screen main container with light gray background and centered content
-    <div className="w-full h-screen bg-neutral-100 flex items-center justify-center px-4">
+ return (
+  // Full-screen main container
+  <div className="w-full h-screen bg-neutral-100 dark:bg-slate-950 transition-all duration-300 flex items-center justify-center px-4">
 
-      {/* Inner container with max width and vertical spacing */}
-      <div className="w-full max-w-4xl h-full flex flex-col py-6 space-y-4">
+    {/* Inner container */}
+    <div className="w-full max-w-4xl h-full flex flex-col py-6 space-y-4">
 
-        {/* Top section: Title input and Create/Update button */}
-        <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
+      {/* Top Section */}
+      <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
 
-          {/* Title input field */}
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)} // Update title on typing
-            placeholder="Title"
-            className="flex-1 px-4 py-3 border border-gray-300 bg-white rounded-md 
-                       text-lg font-medium focus:outline-none focus:ring-2 focus:ring-yellow-500 
-                       shadow-sm text-gray-900 placeholder-gray-400"
-          />
+        {/* Title Input */}
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Title"
+          className="
+            flex-1 px-4 py-3
+            border border-gray-300 dark:border-slate-700
+            bg-white dark:bg-slate-900
+            rounded-md
+            text-lg font-medium
+            focus:outline-none focus:ring-2 focus:ring-yellow-500
+            shadow-sm
+            text-gray-900 dark:text-white
+            placeholder-gray-400 dark:placeholder-gray-500
+            transition-all duration-300
+          "
+        />
 
-          {/* Submit button - Label changes based on whether editing or creating */}
+        {/* Create / Update Button */}
+        <button
+          onClick={createPaste}
+          className="
+            px-6 py-3
+            bg-yellow-400 hover:bg-yellow-500
+            text-black
+            font-semibold text-base
+            rounded-md shadow-sm
+            transition-all duration-300
+            cursor-pointer
+          "
+        >
+          {pasteId ? "Update Note" : "Create Note"}
+        </button>
+      </div>
+
+      {/* Main Notepad */}
+      <div
+        className="
+          flex-1
+          bg-white dark:bg-slate-900
+          border border-gray-300 dark:border-slate-700
+          rounded-md shadow-sm
+          overflow-hidden
+          flex flex-col
+          transition-all duration-300
+        "
+      >
+
+        {/* Header */}
+        <div
+          className="
+            flex items-center justify-between
+            px-4 py-2
+            bg-neutral-50 dark:bg-slate-800
+            border-b border-gray-300 dark:border-slate-700
+            transition-all duration-300
+          "
+        >
+
+          {/* Mac Dots */}
+          <div className="flex space-x-2">
+            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+          </div>
+
+          {/* Copy Button */}
           <button
-            onClick={createPaste}
-            className="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-black 
-                       font-semibold text-base rounded-md shadow-sm transition cursor-pointer"
+            onClick={copyToClipboard}
+            className="
+              text-gray-600 dark:text-gray-300
+              hover:text-black dark:hover:text-white
+              text-sm cursor-pointer
+              transition-all duration-300
+            "
+            title="Copy to Clipboard"
           >
-            {pasteId ? "Update Note" : "Create Note"}
+            📋 Copy
           </button>
         </div>
 
-        {/* Main notepad container */}
-        <div className="flex-1 bg-white border border-gray-300 rounded-md shadow-sm overflow-hidden flex flex-col">
+        {/* Textarea */}
+        <textarea
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="Start typing your note..."
+          className="
+            w-full flex-1
+            px-5 py-4
+            resize-none outline-none
 
-          {/* Notepad header: traffic light dots + copy button */}
-          <div className="flex items-center justify-between px-4 py-2 bg-neutral-50 border-b">
+            bg-white dark:bg-slate-900
+            text-gray-800 dark:text-gray-100
 
-            {/* Fake Mac-style colored dots for UI aesthetics */}
-            <div className="flex space-x-2">
-              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-              <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            </div>
+            text-base font-sans leading-relaxed
 
-            {/* Copy to clipboard button */}
-            <button
-              onClick={copyToClipboard}
-              className="text-gray-600 hover:text-black text-sm cursor-pointer"
-              title="Copy to Clipboard"
-            >
-              📋 Copy
-            </button>
-          </div>
+            placeholder-gray-400 dark:placeholder-gray-500
 
-          {/* Text area for writing the note content */}
-          <textarea
-            value={value}
-            onChange={(e) => setValue(e.target.value)} // Update content on typing
-            placeholder="Start typing your note..."
-            className="w-full flex-1 px-5 py-4 resize-none outline-none 
-                       bg-white text-gray-800 text-base font-sans leading-relaxed"
-          />
-        </div>
+            transition-all duration-300
+          "
+        />
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 // Exporting the Home component so it can be used in App.js or routed
