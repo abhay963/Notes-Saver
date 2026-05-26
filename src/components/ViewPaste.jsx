@@ -1,28 +1,108 @@
-import React from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 const ViewPaste = () => {
   const { id } = useParams();
+
   const allPastes = useSelector((state) => state.paste.pastes);
+
   const paste = allPastes.find((p) => p._id === id);
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(paste.content);
+    alert("Copied Successfully!");
+  };
+
+  const handleOpenLink = () => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+    const match = paste.content.match(urlRegex);
+
+    if (match && match[0]) {
+      window.open(match[0], "_blank");
+    } else {
+      alert("No valid link found!");
+    }
+  };
+
   if (!paste) {
-    return <div className="p-10 text-red-500 text-center">Note not found 😞</div>;
+    return (
+      <div className="p-10 text-red-500 text-center dark:bg-slate-950 dark:text-red-400 min-h-screen transition-all duration-300">
+        Note not found 😞
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
+    <div
+      className="
+        max-w-4xl mx-auto px-6 py-10
+        bg-white dark:bg-slate-950
+        min-h-screen
+        transition-all duration-300
+      "
+    >
       <div className="flex flex-col gap-5">
+
+        {/* Title */}
         <input
-          className="p-3 rounded-md bg-gray-100 text-lg font-semibold text-gray-800 cursor-not-allowed"
+          className="
+            p-3 rounded-md
+            bg-gray-100 dark:bg-slate-900
+            text-lg font-semibold
+            text-gray-800 dark:text-white
+            border border-gray-300 dark:border-slate-700
+            cursor-not-allowed
+            transition-all duration-300
+          "
           type="text"
           value={paste.title}
           disabled
         />
 
+        {/* Buttons */}
+        <div className="flex justify-end gap-3">
+
+          {/* Copy Button */}
+          <button
+            onClick={handleCopy}
+            className="
+              px-4 py-2
+              bg-blue-600 hover:bg-blue-700
+              text-white
+              rounded-lg
+              transition-all duration-300
+            "
+          >
+            📋 Copy
+          </button>
+
+          {/* Open In Browser */}
+          <button
+            onClick={handleOpenLink}
+            className="
+              px-4 py-2
+              bg-green-600 hover:bg-green-700
+              text-white
+              rounded-lg
+              transition-all duration-300
+            "
+          >
+            🌐 Open in Browser
+          </button>
+        </div>
+
+        {/* Content */}
         <textarea
-          className="p-4 rounded-md bg-gray-100 text-gray-800 text-base leading-relaxed min-h-[400px]"
+          className="
+            p-4 rounded-md
+            bg-gray-100 dark:bg-slate-900
+            text-gray-800 dark:text-gray-200
+            border border-gray-300 dark:border-slate-700
+            text-base leading-relaxed
+            min-h-[400px]
+            transition-all duration-300
+          "
           value={paste.content}
           disabled
           rows={20}

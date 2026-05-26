@@ -17,47 +17,48 @@ import { Link } from 'react-router-dom';
 
 // Functional React component to display and manage all saved notes
 const Paste = () => {
-  // Using Redux's useSelector to access the list of notes stored in global state
+
   const pastes = useSelector((state) => state.paste.pastes);
 
-  // Local state to store user input from the search bar
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Local state to track which notes are "expanded" to show full content
-  // We use an object: { [noteId]: true/false }
   const [expanded, setExpanded] = useState({});
 
-  // useDispatch gives us the dispatch function to trigger Redux actions
   const dispatch = useDispatch();
 
-  // Filtering notes based on the search term
-  // We compare lowercased title and searchTerm to make it case-insensitive
   const filteredData = pastes.filter((paste) =>
     paste.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Function to toggle "Show More" or "Show Less" for a specific note by its ID
   const toggleExpanded = (id) => {
     setExpanded((prev) => ({
-      ...prev,          // Keep the previous expanded states
-      [id]: !prev[id],  // Flip the current state (true -> false or false -> true)
+      ...prev,
+      [id]: !prev[id],
     }));
   };
 
-  // Function to handle deletion of a note
-  // Calls Redux action to remove note by its ID
   const handleDelete = (pasteId) => {
-    dispatch(removeFromPastes(pasteId)); // Triggers delete from global store
+    dispatch(removeFromPastes(pasteId));
   };
 
-  // Utility function to truncate note content to a word limit (default: 50)
   const truncateWords = (text, limit = 50) => {
-    const words = text.trim().split(" "); // Break text into words
-    if (words.length <= limit) return text; // If already short, return as-is
-    return words.slice(0, limit).join(" ") + "..."; // Truncate and add ellipsis
+    const words = text.trim().split(" ");
+    if (words.length <= limit) return text;
+    return words.slice(0, limit).join(" ") + "...";
   };
 
-  // JSX return block starts here – the full visual layout of the component
+  // OPEN LINK FUNCTION
+  const handleOpenLink = (content) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const match = content.match(urlRegex);
+
+    if (match && match[0]) {
+      window.open(match[0], "_blank");
+    } else {
+      toast.error("❌ No valid link found!");
+    }
+  };
+
  return (
   <div
     className="
@@ -224,6 +225,20 @@ const Paste = () => {
               >
                 📄 Copy
               </button>
+
+              {/* Open In Browser */}
+              <button
+                onClick={() => handleOpenLink(paste.content)}
+                className="
+                  px-3 py-1 rounded-full
+                  bg-yellow-100 dark:bg-yellow-900/40
+                  text-yellow-700 dark:text-yellow-300
+                  hover:bg-yellow-200 dark:hover:bg-yellow-800/50
+                  transition cursor-pointer
+                "
+              >
+                🌐 Open
+              </button>
             </div>
 
             {/* Timestamp */}
@@ -255,5 +270,4 @@ const Paste = () => {
 );
 };
 
-// Export the component so it can be used in the app or routed
 export default Paste;
