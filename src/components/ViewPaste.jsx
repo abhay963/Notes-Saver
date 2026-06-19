@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { Toaster } from "react-hot-toast";
+
 const ViewPaste = () => {
   const { id } = useParams();
 
@@ -13,63 +13,18 @@ const ViewPaste = () => {
     alert("Copied Successfully!");
   };
 
- const handleOpenLink = () => {
-  try {
-    if (!paste) {
-      toast.error("Paste object not found");
-      return;
-    }
-
-    if (!paste.content) {
-      toast.error("Paste content is empty");
-      return;
-    }
-
-    console.log("Content:", paste.content);
-
-    const urlRegex =
-      /(https?:\/\/[^\s]+)|(www\.[^\s]+\.[^\s]+)/i;
+  const handleOpenLink = () => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
 
     const match = paste.content.match(urlRegex);
 
-    console.log("Match:", match);
-
-    if (!match) {
-      toast.error("No URL found in content");
-      return;
+    if (match && match[0]) {
+      window.open(match[0], "_blank");
+    } else {
+      alert("No valid link found!");
     }
+  };
 
-    let url = match[0];
-
-    if (!url.startsWith("http://") &&
-        !url.startsWith("https://")) {
-      url = `https://${url}`;
-    }
-
-    console.log("Opening URL:", url);
-
-    const newWindow = window.open(
-      url,
-      "_blank",
-      "noopener,noreferrer"
-    );
-
-    if (!newWindow) {
-      toast.error(
-        "Popup blocked by browser. Allow popups for this site."
-      );
-      return;
-    }
-
-    toast.success("Opening link...");
-  } catch (error) {
-    console.error("Open Link Error:", error);
-
-    toast.error(
-      `Error: ${error.message || "Something went wrong"}`
-    );
-  }
-};
   if (!paste) {
     return (
       <div className="p-10 text-red-500 text-center dark:bg-slate-950 dark:text-red-400 min-h-screen transition-all duration-300">
