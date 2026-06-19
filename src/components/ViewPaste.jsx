@@ -14,16 +14,29 @@ const ViewPaste = () => {
   };
 
   const handleOpenLink = () => {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
+  if (!paste?.content) {
+    alert("No content found!");
+    return;
+  }
 
-    const match = paste.content.match(urlRegex);
+  const urlRegex =
+    /(https?:\/\/[^\s]+)|(www\.[^\s]+\.[^\s]+)/i;
 
-    if (match && match[0]) {
-      window.open(match[0], "_blank");
-    } else {
-      alert("No valid link found!");
-    }
-  };
+  const match = paste.content.match(urlRegex);
+
+  if (!match) {
+    alert("No valid link found!");
+    return;
+  }
+
+  let url = match[0];
+
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    url = `https://${url}`;
+  }
+
+  window.open(url, "_blank", "noopener,noreferrer");
+};
 
   if (!paste) {
     return (
